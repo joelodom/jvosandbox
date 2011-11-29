@@ -23,6 +23,7 @@ dnsbl_positives = sets.Set()
 darkspace_positives = sets.Set()
 unrequited_syn_positives = sets.Set()
 simple_signature_positives = sets.Set()
+all_src_addresses = sets.Set()
 
 ################################################################################
 # IP Address Conversion Stuff
@@ -430,6 +431,7 @@ if EXECUTE_MAIN_LOOP:
       (src_addr, dst_addr, total_ipv4_bytes, ipv4_payload_bytes, frag_offset, protocol) = read_ipv4_header(f)
       if total_ipv4_bytes != total_bytes - link_header_bytes:
         raise Exception('byte count mismatch (%s IPv4 vs. %s remaining)' % (total_ipv4_bytes, total_bytes - link_header_bytes))
+      all_src_addresses.add(src_addr)
 
       # DNSBL test
       if DNSBL_TEST:
@@ -475,6 +477,9 @@ if EXECUTE_MAIN_LOOP:
 
   end_time = time.clock()
   print 'Processing speed: %s bps' % (8*total_processed_bytes/(end_time - start_time))
+
+print 'Total source addresses: %s' % len(all_src_addresses)
+print
 
 # perform intersections
 
