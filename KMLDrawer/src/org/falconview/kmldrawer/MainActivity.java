@@ -138,7 +138,13 @@ public class MainActivity extends Activity {
      * The flags to pass to {@link SystemUiHider#getInstance}.
      */
     private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
+    
+    private native void helloLog(String logThis);
 
+    static {
+        System.loadLibrary("KMLShim");  
+    }  
+    
     /**
      * The instance of the {@link SystemUiHider} for this activity.
      */
@@ -159,6 +165,8 @@ public class MainActivity extends Activity {
 		
 		@Override
         public void onDrawFrame(GL10 unused) {
+			helloLog("Drawing..."); 
+			
             // Redraw background color
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
             mTriangle.draw();
