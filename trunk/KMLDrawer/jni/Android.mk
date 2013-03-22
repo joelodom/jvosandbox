@@ -1,22 +1,52 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 APP_STL := stlport_static
-LOCAL_LDLIBS := -llog
+LOCAL_LDLIBS := -llog -lz
 LOCAL_MODULE := KMLShim
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/gtest-1.6.0/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/gtest-1.6.0
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/expat-2.0.1/lib
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/expat-2.0.1
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/libkml-1.2.0/src
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/libkml-1.2.0/third_party/boost_1_34_1
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/expat-2.0.1/lib
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/libkml-1.2.0/third_party/uriparser-0.7.5/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/libkml-1.2.0/third_party/zlib-1.2.3/contrib
 
-LOCAL_CFLAGS := -DGTEST_HAS_TR1_TUPLE=0 -std=c++0x -DDATADIR=/home/joelodom/workspace/KMLDrawer/jni/libkml-1.2.0/testdata
+LOCAL_CFLAGS := -DGTEST_HAS_TR1_TUPLE=0 -std=c++0x -DDATADIR=/home/joelodom/workspace/KMLDrawer/jni/libkml-1.2.0/testdata -DHAVE_EXPAT_CONFIG_H=1
 
-LOCAL_SRC_FILES := shim.cc kml_drawing_library_tests.cpp kml_test_data.cpp KMLDrawingLibrary.cpp
+LOCAL_SRC_FILES := shim.cc kml_drawing_library_tests.cpp kml_test_data.cpp KMLDrawingLibrary.cpp TestShim.cpp
+
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/zlib-1.2.3/contrib/minizip/ioapi.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/zlib-1.2.3/contrib/minizip/iomem_simple.c
+#LOCAL_SRC_FILES += libkml-1.2.0/third_party/zlib-1.2.3/contrib/minizip/iowin32.c
+#LOCAL_SRC_FILES += libkml-1.2.0/third_party/zlib-1.2.3/contrib/minizip/miniunz.c
+#LOCAL_SRC_FILES += libkml-1.2.0/third_party/zlib-1.2.3/contrib/minizip/minizip.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/zlib-1.2.3/contrib/minizip/mztools.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/zlib-1.2.3/contrib/minizip/unzip.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/zlib-1.2.3/contrib/minizip/zip.c
+
+LOCAL_SRC_FILES += expat-2.0.1/lib/xmlparse.c
+LOCAL_SRC_FILES += expat-2.0.1/lib/xmlrole.c
+LOCAL_SRC_FILES += expat-2.0.1/lib/xmltok_ns.c
+LOCAL_SRC_FILES += expat-2.0.1/lib/xmltok.c
 
 LOCAL_SRC_FILES += gtest-1.6.0/src/gtest-all.cc
+
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriCommon.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriCompare.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriEscape.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriFile.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriIp4Base.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriIp4.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriNormalizeBase.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriNormalize.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriParseBase.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriParse.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriQuery.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriRecompose.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriResolve.c
+LOCAL_SRC_FILES += libkml-1.2.0/third_party/uriparser-0.7.5/lib/UriShorten.c
 
 LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/attributes.cc
 #LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/attributes_test.cc
@@ -216,4 +246,28 @@ LOCAL_SRC_FILES += libkml-1.2.0/src/kml/engine/update.cc
 LOCAL_SRC_FILES += libkml-1.2.0/src/kml/engine/update_processor.cc
 #LOCAL_SRC_FILES += libkml-1.2.0/src/kml/engine/update_processor_test.cc
 #LOCAL_SRC_FILES += libkml-1.2.0/src/kml/engine/update_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/atom_util.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/atom_util_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/convenience.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/convenience_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/csv_file.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/csv_file_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/csv_parser.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/csv_parser_test.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/element_counter_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/feature_list.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/feature_list_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/google_doc_list.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/google_doc_list_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/google_maps_data.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/google_maps_data_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/google_picasa_web.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/google_picasa_web_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/google_spreadsheets.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/google_spreadsheets_test.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/gpx_trk_pt_handler_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/http_client.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/http_client_test.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/kmz_check_links.cc
+#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/convenience/kmz_check_links_test.cc
 include $(BUILD_SHARED_LIBRARY)

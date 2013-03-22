@@ -22,7 +22,7 @@
 #include "kml/base/net_cache.h"
 #include "kml/convenience/http_client.h"
 #include "kml/convenience/convenience.h"
-#include <curl/curl.h>
+//#include <curl/curl.h>
 
 #include <functional>
 #include <cctype>
@@ -1232,7 +1232,8 @@ void kmldrawing::KMLDrawer::RenderPhotoOverlay(
             const int MAX_SIZE = 100;
             if (width > MAX_SIZE || height > MAX_SIZE)
             {
-               double scale_factor = ((double)MAX_SIZE)/max(width, height);
+               double max = width > height ? width : height; 
+               double scale_factor = ((double)MAX_SIZE)/max;
                width = (int)(width*scale_factor);
                height = (int)(height*scale_factor);
             }
@@ -2059,7 +2060,7 @@ void kmldrawing::KMLDrawer::DeselectSelectedFeature()
 // (see FalconView SVN history)
 //
 //******************************************************************************
-
+#if 0
 // CURLOPT_WRITEFUNCTION:
 // size*nmemb bytes of data are at ptr, stream is user data
 // return must be size*nmemb or curl itself will fail.
@@ -2103,7 +2104,7 @@ bool CurlToString(const char* url, string* data) {
    curl_easy_cleanup(curl);
    return ret;
 }
-
+#endif
 //******************************************************************************
 //
 // END CODE COPYRIGHTED BY GOOGLE
@@ -2112,7 +2113,9 @@ bool CurlToString(const char* url, string* data) {
 
 bool kmldrawing::FetchWithCurl(const std::string& url, std::string* data)
 {
-   CurlNetFetcher net_fetcher;
+   return false;
+	
+   /*CurlNetFetcher net_fetcher;
    bool fetched = net_fetcher.FetchUrl(url, data);
 
    if (!fetched)
@@ -2130,7 +2133,7 @@ bool kmldrawing::FetchWithCurl(const std::string& url, std::string* data)
       fetched = net_fetcher.FetchUrl(s2, data);
    }
 
-   return fetched;
+   return fetched;*/
 }
 
 bool kmldrawing::KMLNetFetcher::FetchUrl(
@@ -2203,7 +2206,7 @@ bool kmldrawing::ParseKMLDateTime(
    //   <when>1997-07-16T07:30:15Z</when>
    // </TimeStamp>
    // dateTime (YYYY-MM-DDThh:mm:sszzzzzz)
-   // This example gives the local time and then the ± conversion to UTC.
+   // This example gives the local time and then the ï¿½ conversion to UTC.
    // <TimeStamp>
    //   <when>1997-07-16T10:30:15+03:00</when>
    // </TimeStamp>
