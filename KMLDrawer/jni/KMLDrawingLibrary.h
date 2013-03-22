@@ -511,7 +511,7 @@ namespace kmldrawing
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+#if 0
 bool CurlToString(const char* url, std::string* data);
 
 // This class matches the NetFetcher concept used with kmlbase::NetCache.
@@ -521,7 +521,7 @@ class CurlNetFetcher : public kmlbase::NetFetcher {
     return CurlToString(url.c_str(), data);
   }
 };
-
+#endif
 //******************************************************************************
 //
 // END CODE COPYRIGHTED BY GOOGLE
