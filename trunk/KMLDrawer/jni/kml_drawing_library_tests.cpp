@@ -20,7 +20,7 @@
 #include "kml/convenience/convenience.h"
 #include <cmath>
 
-int main(int argc, char **argv) {
+int run_tests_main(int argc, char **argv) {
    ::testing::InitGoogleTest(&argc, argv);
    // gtest will delete new environment
    ::testing::AddGlobalTestEnvironment(new KMLTestEnvironment);
