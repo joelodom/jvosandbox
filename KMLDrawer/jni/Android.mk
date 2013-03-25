@@ -13,7 +13,7 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/libkml-1.2.0/third_party/boost_1_34_1
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/libkml-1.2.0/third_party/uriparser-0.7.5/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/libkml-1.2.0/third_party/zlib-1.2.3/contrib
 
-LOCAL_CFLAGS := -DGTEST_HAS_TR1_TUPLE=0 -std=c++0x -DDATADIR=/home/joelodom/workspace/KMLDrawer/jni/libkml-1.2.0/testdata -DHAVE_EXPAT_CONFIG_H=1
+LOCAL_CFLAGS := -DGTEST_HAS_TR1_TUPLE=0 -std=c++0x -DDATADIR=/home/joelodom/workspace/KMLDrawer/jni/libkml-1.2.0/testdata -DHAVE_EXPAT_CONFIG_H=1 -Dtimegm\(_t_\)=0
 
 LOCAL_SRC_FILES := shim.cc kml_drawing_library_tests.cpp kml_test_data.cpp KMLDrawingLibrary.cpp TestShim.cpp
 
@@ -53,7 +53,7 @@ LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/attributes.cc
 #LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/color32_test.cc
 LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/csv_splitter.cc
 #LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/csv_splitter_test.cc
-#LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/date_time.cc
+LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/date_time.cc
 #LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/date_time_test.cc
 LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/expat_handler_ns.cc
 #LOCAL_SRC_FILES += libkml-1.2.0/src/kml/base/expat_handler_ns_test.cc
