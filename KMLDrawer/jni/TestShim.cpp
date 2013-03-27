@@ -74,10 +74,14 @@ void TestShim::Invalidate(void* ptr) {}
 
 bool TestShim::Fetch(const std::string& uri, std::string* data)
 {
-   return kmldrawing::FetchWithCurl(uri, data);
+   return false; //kmldrawing::FetchWithCurl(uri, data);
 }
 
 bool TestShim::ShouldRender(const kmldom::TimePrimitivePtr& time_primitive)
 {
    return true;
+}
+
+void TestShim::LogMessage(const std::string& message)
+{
 }

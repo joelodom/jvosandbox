@@ -21,6 +21,14 @@ import android.view.Window;
 import android.view.WindowManager;
 
 public class MainActivity extends Activity {
+	private native void nativeLog(String logThis);
+	private native void initDrawer(String kml_url);
+	private native void drawKML(int height, int width);
+
+    static {
+        System.loadLibrary("KMLShim");  
+    }
+    
 	public class DrawView extends View implements OnTouchListener {
 	    private static final String TAG = "DrawView";
 
@@ -40,10 +48,18 @@ public class MainActivity extends Activity {
 
 	    @Override
 	    public void onDraw(Canvas canvas) {
+	    	// draw user points
 	        for (Point point : points) {
 	            canvas.drawCircle(point.x, point.y, 5, paint);
 	            // Log.d(TAG, "Painting: "+point);
 	        }
+	        
+	        // draw KML
+	        
+	        int height = canvas.getHeight();
+	        int width = canvas.getWidth();
+	        
+	        drawKML(height, width);
 	    }
 
 	    public boolean onTouch(View view, MotionEvent event) {
@@ -54,7 +70,8 @@ public class MainActivity extends Activity {
 	        point.y = event.getY();
 	        points.add(point);
 	        invalidate();
-	        Log.d(TAG, "point: " + point);
+	        //Log.d(TAG, "point: " + point);
+	        //nativeLog("new touch point: " + point);
 	        return true;
 	    }
 	}
@@ -73,6 +90,10 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // initialize the drawer
+        initDrawer("http://www.example.com/");
+        
         // Set full screen view
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
                                          WindowManager.LayoutParams.FLAG_FULLSCREEN);
