@@ -170,6 +170,8 @@ namespace kmldrawing
 
       virtual bool ShouldRender(
          const kmldom::TimePrimitivePtr& time_primitive) = 0;
+
+      virtual void LogMessage(const std::string& message) = 0;
    }; // class KMLShim
 
    class KMLNetFetcher : public kmlbase::NetFetcher
@@ -466,7 +468,7 @@ namespace kmldrawing
 
    // This is a convenience function for fetching with a CurlNetFetcher.  It is
    // completely self-contained, so it may be called from multiple threads.
-   extern bool FetchWithCurl(const std::string& url, std::string* data);
+   //extern bool FetchWithCurl(const std::string& url, std::string* data);
 
    // This is a convenience function for parsing a date time string from KML.
    // If there is an offset from UTC specified it will be returned so that

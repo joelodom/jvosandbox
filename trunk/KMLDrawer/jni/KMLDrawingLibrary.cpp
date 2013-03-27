@@ -1615,7 +1615,7 @@ bool kmldrawing::KMLDrawer::FetchData(
          // refetch (ouch!) the KMZ
 
          std::string kmz;
-         if (FetchWithCurl(m_uris.top(), &kmz)
+         if (FetchData(m_uris.top(), &kmz)
             && kmlengine::KmzFile::IsKmz(kmz))
          {
             // we have fetched raw KMZ
@@ -1697,6 +1697,9 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
    // will be resolved relative to what is being drawn at the time of the call.
 
    // try to parse as KMZ
+
+   m_shim->LogMessage("Trying KMZ...");
+
    std::string possible_kmz;
    kmlengine::KmzFilePtr kmz_file = nullptr;
    if (FetchData(uri, &possible_kmz) && kmlengine::KmzFile::IsKmz(possible_kmz))
@@ -1712,6 +1715,9 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
    // Check out KML file cache on the original URI to avoid (maybe) the next
    // (possibly very slow) step.  This is necessary due to a LibKML bug where
    // KML inside of a KMZ is sometimes reparsed every fetch.
+
+   m_shim->LogMessage("Trying KML file cache...");
+
    auto it = m_kml_file_cache.find(resolved_uri);
    if (it != m_kml_file_cache.end())
    {
@@ -1722,6 +1728,9 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
    }
 
    // try the KmlCache relative to our URL
+
+   m_shim->LogMessage("Trying relative fetch...");
+
    if (kml_file == nullptr && m_uris.size() > 0)
    {
       kml_file = m_kml_cache->FetchKmlRelative(m_uris.top(), uri);
@@ -1737,6 +1746,9 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
    }
 
    // special handling for possibly local files
+
+   m_shim->LogMessage("Trying local file...");
+
    if (kml_file == nullptr)
    {
       FetchPossiblyLocalFile(uri, &kml_file);
@@ -1747,6 +1759,9 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
    }
 
    // last ditch is to try the KmlCache with absolute URL
+
+   m_shim->LogMessage("Trying absolute URL...");
+
    if (kml_file == nullptr)
       kml_file = m_kml_cache->FetchKmlRelative(uri, uri);
 
@@ -2111,30 +2126,28 @@ bool CurlToString(const char* url, string* data) {
 //
 //******************************************************************************
 
-bool kmldrawing::FetchWithCurl(const std::string& url, std::string* data)
-{
-   return false;
-	
-   /*CurlNetFetcher net_fetcher;
-   bool fetched = net_fetcher.FetchUrl(url, data);
-
-   if (!fetched)
-   {
-      // LibKML has a buggy behavior where, when fetching KMZ files from the
-      // local file system, it converts the URI back to a file name and then
-      // tries to fetch it.  Curl needs a URI, not a local file name.  Using
-      // only FilenameToUri doesn't always work because LibKML retains
-      // escaped characters.  This work around removes escaped
-      // characters from the file name and then converts back to a URI.
-
-      std::string s1, s2;
-      kmlbase::UriParser::UriToFilename(url, &s1);
-      kmlbase::UriParser::FilenameToUri(s1, &s2);
-      fetched = net_fetcher.FetchUrl(s2, data);
-   }
-
-   return fetched;*/
-}
+//bool kmldrawing::FetchWithCurl(const std::string& url, std::string* data)
+//{
+//   CurlNetFetcher net_fetcher;
+//   bool fetched = net_fetcher.FetchUrl(url, data);
+//
+//   if (!fetched)
+//   {
+//      // LibKML has a buggy behavior where, when fetching KMZ files from the
+//      // local file system, it converts the URI back to a file name and then
+//      // tries to fetch it.  Curl needs a URI, not a local file name.  Using
+//      // only FilenameToUri doesn't always work because LibKML retains
+//      // escaped characters.  This work around removes escaped
+//      // characters from the file name and then converts back to a URI.
+//
+//      std::string s1, s2;
+//      kmlbase::UriParser::UriToFilename(url, &s1);
+//      kmlbase::UriParser::FilenameToUri(s1, &s2);
+//      fetched = net_fetcher.FetchUrl(s2, data);
+//   }
+//
+//   return fetched;
+//}
 
 bool kmldrawing::KMLNetFetcher::FetchUrl(
    const std::string& url, std::string* data) const
@@ -2159,7 +2172,7 @@ bool kmldrawing::KMLNetFetcher::FetchUrl(
    // are true.
 
    return m_shim == nullptr
-      ? FetchWithCurl(url, data)
+      ? false // FetchWithCurl(url, data)
       : m_shim->Fetch(url, data);
 }
 

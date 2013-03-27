@@ -405,6 +405,7 @@ public:
    virtual void Invalidate(void* ptr);
    virtual bool Fetch(const std::string& uri, std::string* data);
    virtual bool ShouldRender(const kmldom::TimePrimitivePtr& time_primitive);
+   virtual void LogMessage(const std::string& message);
 
 private:
    TestShimImage m_image;
