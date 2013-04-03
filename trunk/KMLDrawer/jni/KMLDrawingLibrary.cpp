@@ -450,6 +450,8 @@ bool kmldrawing::KMLDrawer::KMLFeatureInRegion(kmldom::FeaturePtr feature)
 void kmldrawing::KMLDrawer::RenderPlacemark(
    const kmldom::PlacemarkPtr& placemark)
 {
+   //m_shim->LogMessage("Entering RenderPlacemark");
+
    if (!placemark->has_geometry())
       return;
 
@@ -460,6 +462,8 @@ void kmldrawing::KMLDrawer::RenderPlacemark(
 void kmldrawing::KMLDrawer::RenderGeometry(const kmldom::GeometryPtr& geometry,
    const kmldom::PlacemarkPtr& associated_placemark)
 {
+   //m_shim->LogMessage("Entering RenderGeometry");
+
    kmldom::KmlDomType type = geometry->Type();
    switch (type)
    {
@@ -511,6 +515,8 @@ void kmldrawing::KMLDrawer::RenderGeometry(const kmldom::GeometryPtr& geometry,
 void kmldrawing::KMLDrawer::RenderPoint(const kmldom::PointPtr& point,
    const kmldom::PlacemarkPtr& associated_placemark)
 {
+   //m_shim->LogMessage("Entering RenderPoint");
+
    const kmldom::CoordinatesPtr coordinates = point->get_coordinates();
    const kmlbase::Vec3 vec = coordinates->get_coordinates_array_at(0);
 
@@ -530,9 +536,12 @@ void kmldrawing::KMLDrawer::RenderPoint(const kmldom::PointPtr& point,
 
    int surface_x, surface_y;
    m_shim->GeoToSurface(latitude, longitude, &surface_x, &surface_y);
+
    if (surface_x >= 0 && surface_x < m_surface_width &&
       surface_y >= 0 && surface_y < m_surface_height)
    {
+	  //m_shim->LogMessage("point is on surface");
+
       kmldom::StylePtr style = ResolveStyle(associated_placemark);
 
       float icon_size = 4.0f;
@@ -1698,7 +1707,7 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
 
    // try to parse as KMZ
 
-   m_shim->LogMessage("Trying KMZ...");
+   //m_shim->LogMessage("Trying KMZ...");
 
    std::string possible_kmz;
    kmlengine::KmzFilePtr kmz_file = nullptr;
@@ -1716,7 +1725,7 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
    // (possibly very slow) step.  This is necessary due to a LibKML bug where
    // KML inside of a KMZ is sometimes reparsed every fetch.
 
-   m_shim->LogMessage("Trying KML file cache...");
+   //m_shim->LogMessage("Trying KML file cache...");
 
    auto it = m_kml_file_cache.find(resolved_uri);
    if (it != m_kml_file_cache.end())
@@ -1729,7 +1738,7 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
 
    // try the KmlCache relative to our URL
 
-   m_shim->LogMessage("Trying relative fetch...");
+   //m_shim->LogMessage("Trying relative fetch...");
 
    if (kml_file == nullptr && m_uris.size() > 0)
    {
@@ -1747,7 +1756,7 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
 
    // special handling for possibly local files
 
-   m_shim->LogMessage("Trying local file...");
+   //m_shim->LogMessage("Trying local file...");
 
    if (kml_file == nullptr)
    {
@@ -1760,7 +1769,7 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
 
    // last ditch is to try the KmlCache with absolute URL
 
-   m_shim->LogMessage("Trying absolute URL...");
+   //m_shim->LogMessage("Trying absolute URL...");
 
    if (kml_file == nullptr)
       kml_file = m_kml_cache->FetchKmlRelative(uri, uri);
