@@ -75,6 +75,8 @@ JNIEXPORT void JNICALL Java_org_falconview_kmldrawer_MainActivity_drawKML(
 {
 	the_shim->m_height = height;
 	the_shim->m_width = width;
+	the_shim->m_env = env;
+	the_shim->m_obj = obj;
 
 	the_drawer->Draw();
 
@@ -194,7 +196,18 @@ void AndroidShim::DrawImageGeo(const kmldrawing::Image& image,
 void AndroidShim::DrawEllipse(float x, float y, float x_axis, float y_axis,
       const kmldrawing::Pen& pen, const kmldrawing::Brush& brush)
 {
-	LogMessage("NOT IMPLEMENTED: DrawEllipse");
+	//LogMessage("NOT IMPLEMENTED: DrawEllipse");
+
+	jclass cls = m_env->GetObjectClass(m_obj);
+	jmethodID mid = m_env->GetMethodID(cls, "addEllipse", "(FF)V");
+
+	if (mid == 0)
+	{
+		LogMessage("addEllipse failed");
+		return;
+	}
+
+	m_env->CallVoidMethod(m_obj, mid, x, y);
 }
 
 void AndroidShim::DrawPolyPolygon(
