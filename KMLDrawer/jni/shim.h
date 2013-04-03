@@ -3,9 +3,19 @@
 
 #include "KMLDrawingLibrary.h"
 
+class AndroidPen : public kmldrawing::Pen
+{
+};
+
+class AndroidBrush : public kmldrawing::Brush
+{
+};
+
 class AndroidShim : public kmldrawing::KMLShim
 {
 public:
+   void CleanupAfterDraw();
+
    virtual void BeginDraw();
    virtual void EndDraw();
    virtual void BeginDrawElement(const kmldom::ElementPtr& element);
@@ -47,6 +57,8 @@ public:
    virtual void LogMessage(const std::string& message);
 
    int m_height, m_width;
+   std::stack<kmldrawing::Pen*> m_pens_to_delete_after_each_draw;
+   std::stack<kmldrawing::Brush*> m_brushes_to_delete_after_each_draw;
 };
 
 #endif // #ifndef KML_TEST_SHIM_H_

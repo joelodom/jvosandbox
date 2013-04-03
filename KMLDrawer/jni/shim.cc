@@ -77,6 +77,8 @@ JNIEXPORT void JNICALL Java_org_falconview_kmldrawer_MainActivity_drawKML(
 	the_shim->m_width = width;
 
 	the_drawer->Draw();
+
+	the_shim->CleanupAfterDraw();
 }
 
 ////
@@ -85,22 +87,22 @@ JNIEXPORT void JNICALL Java_org_falconview_kmldrawer_MainActivity_drawKML(
 
 void AndroidShim::BeginDraw()
 {
-	LogMessage("NOT IMPLEMENTED: BeginDraw");
+	//LogMessage("NOT IMPLEMENTED: BeginDraw");
 }
 
 void AndroidShim::EndDraw()
 {
-	LogMessage("NOT IMPLEMENTED: EndDraw");
+	//LogMessage("NOT IMPLEMENTED: EndDraw");
 }
 
 void AndroidShim::BeginDrawElement(const kmldom::ElementPtr& element)
 {
-	LogMessage("NOT IMPLEMENTED: BeginDrawElement");
+	//LogMessage("NOT IMPLEMENTED: BeginDrawElement");
 }
 
 void AndroidShim::EndDrawElement(const kmldom::ElementPtr& element)
 {
-	LogMessage("NOT IMPLEMENTED: EndDrawElement");
+	//LogMessage("NOT IMPLEMENTED: EndDrawElement");
 }
 
 void AndroidShim::GetSurfaceSize(int* width, int* height)
@@ -116,17 +118,37 @@ void AndroidShim::GetSurfaceSize(int* width, int* height)
 void AndroidShim::GetMapBounds(double* bottom_lat, double* left_lon,
       double* top_lat, double* right_lon)
 {
-	LogMessage("NOT IMPLEMENTED: GetMapBounds");
+	//LogMessage("NOT IMPLEMENTED: GetMapBounds");
+	*bottom_lat = 28.0;
+	*left_lon = -127.0;
+	*top_lat = 50.0;
+	*right_lon = -74.0;
 }
 
 void AndroidShim::GetDegreesPerPixel(double* dpp_y, double* dpp_x)
 {
-	LogMessage("NOT IMPLEMENTED: GetDegreesPerPixel");
+	//LogMessage("NOT IMPLEMENTED: GetDegreesPerPixel");
+	double bottom_lat, left_lon, top_lat, right_lon;
+	GetMapBounds(&bottom_lat, &left_lon, &top_lat, &right_lon);
+	*dpp_y = (top_lat - bottom_lat) / m_height;
+	*dpp_x = (right_lon - left_lon) / m_width;
 }
 
 void AndroidShim::GeoToSurface(double lat, double lon, int* x, int* y)
 {
-	LogMessage("NOT IMPLEMENTED: GeoToSurface");
+	//LogMessage("NOT IMPLEMENTED: GeoToSurface");
+	double dpp_y, dpp_x;
+	double bottom_lat, left_lon, top_lat, right_lon;
+	GetDegreesPerPixel(&dpp_y, &dpp_x);
+	GetMapBounds(&bottom_lat, &left_lon, &top_lat, &right_lon);
+	*x = (lon - left_lon)/dpp_x;
+	*y = m_height - (lat - bottom_lat)/dpp_y;
+
+//	std::stringstream ss;
+//	ss << "right_lon: " << right_lon;
+//	ss << " lon: " << lon;
+//	ss << " dpp_x: " << dpp_x;
+//	LogMessage(ss.str());
 }
 
 void AndroidShim::SurfaceToGeo(int x, int y, double* lat, double* lon)
@@ -137,13 +159,17 @@ void AndroidShim::SurfaceToGeo(int x, int y, double* lat, double* lon)
 void AndroidShim::CreatePen(
       const kmlbase::Color32& color, float width, kmldrawing::Pen** pen)
 {
-	LogMessage("NOT IMPLEMENTED: CreatePen");
+	//LogMessage("NOT IMPLEMENTED: CreatePen");
+	*pen = new AndroidPen;
+	m_pens_to_delete_after_each_draw.push(*pen);
 }
 
 void AndroidShim::CreateBrush(
       const kmlbase::Color32& color, kmldrawing::Brush** brush)
 {
-	LogMessage("NOT IMPLEMENTED: CreateBrush");
+	//LogMessage("NOT IMPLEMENTED: CreateBrush");
+	*brush = new AndroidBrush;
+	m_brushes_to_delete_after_each_draw.push(*brush);
 }
 
 void AndroidShim::CreateImageFromRawBytes(
@@ -216,7 +242,7 @@ extern std::string TEST_COORDINATES_KML_DATA;
 
 bool AndroidShim::Fetch(const std::string& uri, std::string* data)
 {
-   *data = TEST_COORDINATES_KML_DATA;
+   *data = "<kml><Placemark><Point><coordinates>-84,34</coordinates></Point></Placemark></kml>";
    return true;
 }
 
@@ -228,4 +254,19 @@ bool AndroidShim::ShouldRender(const kmldom::TimePrimitivePtr& time_primitive)
 void AndroidShim::LogMessage(const std::string& message)
 {
 	__android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, message.c_str());
+}
+
+void AndroidShim::CleanupAfterDraw()
+{
+   while (m_pens_to_delete_after_each_draw.size() > 0)
+   {
+      delete m_pens_to_delete_after_each_draw.top();
+      m_pens_to_delete_after_each_draw.pop();
+   }
+
+   while (m_brushes_to_delete_after_each_draw.size() > 0)
+   {
+      delete m_brushes_to_delete_after_each_draw.top();
+      m_brushes_to_delete_after_each_draw.pop();
+   }
 }
