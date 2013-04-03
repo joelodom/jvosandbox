@@ -40,7 +40,7 @@ public class MainActivity extends Activity {
 	        setFocusable(true);
 	        setFocusableInTouchMode(true);
 
-	        this.setOnTouchListener(this);
+	        //this.setOnTouchListener(this);
 
 	        paint.setColor(Color.WHITE);
 	        paint.setAntiAlias(true);
@@ -48,31 +48,44 @@ public class MainActivity extends Activity {
 
 	    @Override
 	    public void onDraw(Canvas canvas) {
-	    	// draw user points
-	        for (Point point : points) {
-	            canvas.drawCircle(point.x, point.y, 5, paint);
-	            // Log.d(TAG, "Painting: "+point);
-	        }
-	        
-	        // draw KML
+	    	// paint background
+	    	canvas.drawARGB(255, 0, 0, 0);
+	    	
+	    	// clear objects
+	    	points.clear();
+	    	
+	        // draw KML (adds KML objects to draw)
 	        
 	        int height = canvas.getHeight();
 	        int width = canvas.getWidth();
 	        
 	        drawKML(height, width);
+	        
+	        // draw background
+	        
+	    	// draw points
+	        for (Point point : points) {
+	            canvas.drawCircle(point.x, point.y, 5, paint);
+	            // Log.d(TAG, "Painting: "+point);
+	        }
 	    }
 
 	    public boolean onTouch(View view, MotionEvent event) {
 	        // if(event.getAction() != MotionEvent.ACTION_DOWN)
 	        // return super.onTouchEvent(event);
-	        Point point = new Point();
-	        point.x = event.getX();
-	        point.y = event.getY();
-	        points.add(point);
-	        invalidate();
 	        //Log.d(TAG, "point: " + point);
+	    	addEllipse((int)event.getX(), (int)event.getY());
 	        //nativeLog("new touch point: " + point);
+	        invalidate();
 	        return true;
+	    }
+	    
+	    public void addEllipse(float x, float y) {
+	        Point point = new Point();
+	        point.x = x;
+	        point.y = y;
+	        points.add(point);
+	        nativeLog("new KML point: " + point);
 	    }
 	}
 
@@ -102,5 +115,9 @@ public class MainActivity extends Activity {
         drawView = new DrawView(this);
         setContentView(drawView);
         drawView.requestFocus();
+    }
+    
+    public void addEllipse(float x, float y) {
+    	drawView.addEllipse(x, y);
     }
 }

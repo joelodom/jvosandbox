@@ -59,6 +59,8 @@ public:
    int m_height, m_width;
    std::stack<kmldrawing::Pen*> m_pens_to_delete_after_each_draw;
    std::stack<kmldrawing::Brush*> m_brushes_to_delete_after_each_draw;
+   JNIEnv* m_env;
+   jobject m_obj;
 };
 
 #endif // #ifndef KML_TEST_SHIM_H_
