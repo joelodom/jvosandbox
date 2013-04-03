@@ -121,10 +121,10 @@ void AndroidShim::GetMapBounds(double* bottom_lat, double* left_lon,
       double* top_lat, double* right_lon)
 {
 	//LogMessage("NOT IMPLEMENTED: GetMapBounds");
-	*bottom_lat = 28.0;
+	*bottom_lat = 23.0;
 	*left_lon = -127.0;
 	*top_lat = 50.0;
-	*right_lon = -74.0;
+	*right_lon = -67.0;
 }
 
 void AndroidShim::GetDegreesPerPixel(double* dpp_y, double* dpp_x)
@@ -203,7 +203,7 @@ void AndroidShim::DrawEllipse(float x, float y, float x_axis, float y_axis,
 
 	if (mid == 0)
 	{
-		LogMessage("addEllipse failed");
+		LogMessage("addEllipse not found");
 		return;
 	}
 
@@ -215,7 +215,26 @@ void AndroidShim::DrawPolyPolygon(
       const std::vector<int>& point_counts,
       const kmldrawing::Pen& pen, const kmldrawing::Brush& brush)
 {
-	LogMessage("NOT IMPLEMENTED: DrawPolyPolygon");
+	//LogMessage("NOT IMPLEMENTED: DrawPolyPolygon");
+
+	jclass cls = m_env->GetObjectClass(m_obj);
+	jmethodID mid = m_env->GetMethodID(cls, "addLine", "(FFFF)V");
+
+	if (mid == 0)
+	{
+		LogMessage("addLine not found");
+		return;
+	}
+
+	// TODO: inner rings
+
+	size_t point_count = point_counts[0];
+	for (size_t i = 0; i < point_count - 1; i++)
+		m_env->CallVoidMethod(
+				m_obj, mid, points[i].first, points[i].second, points[i + 1].first, points[i + 1].second);
+	// close the polygon
+	m_env->CallVoidMethod(m_obj, mid, points[point_count - 1].first, points[point_count - 1].second,
+			points[0].first, points[0].second);
 }
 
 void AndroidShim::DrawLines(const std::vector<std::pair<float, float>>& points,
@@ -252,10 +271,12 @@ void AndroidShim::Invalidate(void* ptr)
 }
 
 extern std::string TEST_COORDINATES_KML_DATA;
+extern std::string US_STATES_KML;
 
 bool AndroidShim::Fetch(const std::string& uri, std::string* data)
 {
-   *data = "<kml><Placemark><Point><coordinates>-84,34</coordinates></Point></Placemark></kml>";
+   //*data = "<kml><Placemark><Point><coordinates>-84,34</coordinates></Point></Placemark></kml>";
+   *data = US_STATES_KML;
    return true;
 }
 
