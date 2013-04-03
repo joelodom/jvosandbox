@@ -33,6 +33,7 @@ public class MainActivity extends Activity {
 	    private static final String TAG = "DrawView";
 
 	    List<Point> points = new ArrayList<Point>();
+	    List<Line> lines = new ArrayList<Line>();
 	    Paint paint = new Paint();
 
 	    public DrawView(Context context) {
@@ -48,11 +49,12 @@ public class MainActivity extends Activity {
 
 	    @Override
 	    public void onDraw(Canvas canvas) {
-	    	// paint background
+	        // draw background
 	    	canvas.drawARGB(255, 0, 0, 0);
 	    	
 	    	// clear objects
 	    	points.clear();
+	    	lines.clear();
 	    	
 	        // draw KML (adds KML objects to draw)
 	        
@@ -61,7 +63,10 @@ public class MainActivity extends Activity {
 	        
 	        drawKML(height, width);
 	        
-	        // draw background
+	        // draw lines
+	        for (Line line : lines) {
+	        	canvas.drawLine(line.a.x, line.a.y, line.b.x, line.b.y, paint);
+	        }
 	        
 	    	// draw points
 	        for (Point point : points) {
@@ -85,7 +90,26 @@ public class MainActivity extends Activity {
 	        point.x = x;
 	        point.y = y;
 	        points.add(point);
-	        nativeLog("new KML point: " + point);
+	        //nativeLog("new KML point: " + point);
+	    }
+	    
+	    public void addLine(float x1, float y1, float x2, float y2) {
+	    	Line line = new Line();
+	    	
+	        Point point1 = new Point();
+	        point1.x = x1;
+	        point1.y = y1;
+	        line.a = point1;
+	        
+	        Point point2 = new Point();
+	        point2.x = x2;
+	        point2.y = y2;
+	        line.b = point2;
+	        
+	        lines.add(line);
+	        
+	        if (x1 < 1 || y1 < 1 || x2 < 1 || y2 < 1)
+	        	nativeLog("new KML line: " + line);
 	    }
 	}
 
@@ -95,6 +119,15 @@ public class MainActivity extends Activity {
 	    @Override
 	    public String toString() {
 	        return x + ", " + y;
+	    }
+	}
+
+	class Line {
+	    Point a, b;
+
+	    @Override
+	    public String toString() {
+	        return a.x + ", " + a.y + " - " + b.x + ", " + b.y;
 	    }
 	}
 	
@@ -119,5 +152,9 @@ public class MainActivity extends Activity {
     
     public void addEllipse(float x, float y) {
     	drawView.addEllipse(x, y);
+    }
+    
+    public void addLine(float x1, float y1, float x2, float y2) {
+    	drawView.addLine(x1, y1, x2, y2);
     }
 }
