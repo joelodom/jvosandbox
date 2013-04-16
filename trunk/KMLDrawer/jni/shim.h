@@ -11,6 +11,21 @@ class AndroidBrush : public kmldrawing::Brush
 {
 };
 
+class AndroidImage : public kmldrawing::Image
+{
+public:
+   AndroidImage(int index) : m_index(index) {}
+
+   /*virtual*/ void GetSize(int* width, int* height) const
+   {
+      // TODO
+      *width = 256;
+      *height = 256;
+   }
+
+   int m_index;
+};
+
 class AndroidShim : public kmldrawing::KMLShim
 {
 public:
@@ -57,8 +72,11 @@ public:
    virtual void LogMessage(const std::string& message);
 
    int m_height, m_width;
+
    std::stack<kmldrawing::Pen*> m_pens_to_delete_after_each_draw;
    std::stack<kmldrawing::Brush*> m_brushes_to_delete_after_each_draw;
+   std::stack<kmldrawing::Image*> m_images_to_delete_on_overlay_close; // TODO: delete cached images
+
    JNIEnv* m_env;
    jobject m_obj;
 };

@@ -187,19 +187,57 @@ void AndroidShim::CreateImageFromRawBytes(
       unsigned char* bytes, size_t length, kmldrawing::Image** image,
       bool will_be_used_for_geo /*= false*/)
 {
-   LogMessage("NOT IMPLEMENTED: CreateImageFromRawBytes");
+   // get the createImage method id
+   jclass cls = m_env->GetObjectClass(m_obj);
+   jmethodID mid = m_env->GetMethodID(cls, "createImage", "([B)I");
+   if (mid == 0)
+   {
+      LogMessage("createImage not found");
+      return;
+   }
+
+   // move the image data into a Java byte array
+   jbyteArray byte_array = m_env->NewByteArray(length);
+   m_env->SetByteArrayRegion(byte_array, 0, length, (jbyte*)bytes);
+
+   // create and save the image
+   int index = m_env->CallIntMethod(m_obj, mid, byte_array);
+   *image = new AndroidImage(index);
+
+   // clean up
+   m_images_to_delete_on_overlay_close.push(*image);
+   m_env->DeleteLocalRef(byte_array);
 }
 
 void AndroidShim::DrawImage(const kmldrawing::Image& image,
       float left, float top, float right, float bottom, float rotation)
 {
-   LogMessage("NOT IMPLEMENTED: DrawImage");
+   AndroidImage android_image = static_cast<const AndroidImage&>(image);
+
+   // get the addImage method id
+   jclass cls = m_env->GetObjectClass(m_obj);
+   jmethodID mid = m_env->GetMethodID(cls, "addImage", "(IFFFFF)V");
+   if (mid == 0)
+   {
+      LogMessage("addImage not found");
+      return;
+   }
+
+   // add the image
+   m_env->CallVoidMethod(m_obj, mid, android_image.m_index,
+      left, top, right, bottom, rotation);
 }
 
 void AndroidShim::DrawImageGeo(const kmldrawing::Image& image,
       double west, double north, double east, double south)
 {
-   LogMessage("NOT IMPLEMENTED: DrawImageGeo");
+   // get the screen bounds
+   int ul_x, ul_y, lr_x, lr_y;
+   GeoToSurface(north, west, &ul_x, &ul_y);
+   GeoToSurface(south, east, &lr_x, &lr_y);
+
+   // draw
+   DrawImage(image, ul_x, ul_y, lr_x, lr_y, 0.0f);
 }
 
 void AndroidShim::DrawEllipse(float x, float y, float x_axis, float y_axis,
@@ -288,7 +326,7 @@ bool AndroidShim::Fetch(const std::string& uri, std::string* data)
 
    jclass cls = m_env->GetObjectClass(m_obj);
    LogMessage("Calling GetMethodID");
-   jmethodID mid = m_env->GetMethodID(cls, "fetchURL", "(Ljava/lang/String;)Ljava/lang/String;");
+   jmethodID mid = m_env->GetMethodID(cls, "fetchURL", "(Ljava/lang/String;)[B");
    if (mid == 0)
    {
       LogMessage("fetchURL not found");
@@ -296,20 +334,24 @@ bool AndroidShim::Fetch(const std::string& uri, std::string* data)
    }
 
    LogMessage("Calling NewStringUTF");
-   jobject jvo = m_env->NewStringUTF(uri.c_str()); // TODO: does this leak???
+   jobject str = m_env->NewStringUTF(uri.c_str()); // TODO: does this leak???
    LogMessage("Calling CallObjectMethod");
-   jstring fetched_jstring = (jstring)m_env->CallObjectMethod(m_obj, mid, jvo);
+   jbyteArray arr = (jbyteArray)m_env->CallObjectMethod(m_obj, mid, str);
+   jsize len = m_env->GetArrayLength(arr);
 
    jboolean is_copy;
-   LogMessage("Calling GetStringUTFChars");
-   const char* fetched_cstring = m_env->GetStringUTFChars(fetched_jstring, &is_copy);
-   *data = fetched_cstring;
-   LogMessage("Calling ReleaseStringUTFChars");
-   m_env->ReleaseStringUTFChars(fetched_jstring, fetched_cstring);
+   LogMessage("Calling GetByteArrayElements");
+   jbyte* bytes = m_env->GetByteArrayElements(arr, &is_copy);
+   data->assign((char*)bytes, len);
+   //LogMessage("Calling ReleaseByteArrayElements");
+   //m_env->ReleaseByteArrayElements(); // TODO: definite leak (see performance tip at http://developer.android.com/training/articles/perf-jni.html)
 
    std::stringstream ss;
    ss << "Returning from Fetch " << uri << " " << data->length() << " characters";
-   //ss << "  Starts: " << data->substr(0, 40);
+   ss << "  array bytes: " << len;
+   //ss << "  Starts: " << data->substr(0, 20);
+   //ss << "  Ends: " << data->substr(data->length() - 20);
+   //ss << "  Byte 9: " << std::hex << int((*data)[8]);
    LogMessage(ss.str().c_str());
 
    //*data = US_STATES_KML;

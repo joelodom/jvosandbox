@@ -1,21 +1,22 @@
 package org.falconview.kmldrawer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.os.StrictMode.ThreadPolicy;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -38,6 +39,8 @@ public class MainActivity extends Activity {
 
 		List<Point> points = new ArrayList<Point>();
 		List<Line> lines = new ArrayList<Line>();
+		List<Image> images = new ArrayList<Image>();
+
 		Paint paint = new Paint();
 
 		public DrawView(Context context) {
@@ -77,6 +80,15 @@ public class MainActivity extends Activity {
 				canvas.drawCircle(point.x, point.y, 5, paint);
 				// Log.d(TAG, "Painting: "+point);
 			}
+			
+			// draw images
+			for (Image image : images) {
+				// TODO: rotation
+				Bitmap bmp = cachedBitmaps.get(image.index);
+				Rect src = new Rect(0, 0, bmp.getWidth(), bmp.getHeight());
+				RectF dst = new RectF(image.left, image.top, image.right, image.bottom);
+				canvas.drawBitmap(bmp, src, dst, paint);
+			}
 		}
 
 		public boolean onTouch(View view, MotionEvent event) {
@@ -111,6 +123,11 @@ public class MainActivity extends Activity {
 
 			lines.add(line);
 		}
+		
+		public void addImage(int index, float left, float top, float right, float bottom, float rotation) {
+			Image image = new Image(index, left, top, right, bottom, rotation);
+			images.add(image);
+		}
 	}
 
 	class Point {
@@ -130,6 +147,22 @@ public class MainActivity extends Activity {
 			return a.x + ", " + a.y + " - " + b.x + ", " + b.y;
 		}
 	}
+	
+	List<Bitmap> cachedBitmaps = new ArrayList<Bitmap>();
+	
+	class Image {
+		float left, top, right, bottom, rotation;
+		int index;
+		
+		public Image(int index, float left, float top, float right, float bottom, float rotation) {
+			this.index = index;
+			this.left = left;
+			this.top = top;
+			this.right = right;
+			this.bottom = bottom;
+			this.rotation = rotation;
+		}
+	}
 
 	DrawView drawView;
 
@@ -143,7 +176,8 @@ public class MainActivity extends Activity {
 		StrictMode.setThreadPolicy(policy);
 
 		// initialize the drawer
-		initDrawer("http://osm-kml.appspot.com/static/us_states.kml");
+		//initDrawer("http://osm-kml.appspot.com/static/us_states.kml");
+		initDrawer("http://osm-kml.appspot.com/static/osm.kml");
 
 		// Set full screen view
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -163,29 +197,32 @@ public class MainActivity extends Activity {
 		drawView.addLine(x1, y1, x2, y2);
 	}
 	
-	public String fetchURL(String url_string) {
-		// CALLING nativeLog here causes crashes down the line
+	public void addImage(int index, float left, float top, float right, float bottom, float rotation) {
+		drawView.addImage(index, left, top, right, bottom, rotation);
+	}
+	
+	public byte[] fetchURL(String url_string) {
+		// calling nativeLog here leads to an eventual crash
 		
-		String inputLine, output = "";
-		StringBuilder sbuilder = new StringBuilder();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 		try {
 			URL url = new URL(url_string);
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					url.openStream()));
-			while ((inputLine = in.readLine()) != null) {
-				sbuilder.append(inputLine);
+			InputStream is = url.openStream();
+			byte[] byteChunk = new byte[4096];
+			int n;
+			while ((n = is.read(byteChunk)) > 0) {
+				baos.write(byteChunk, 0, n);
 			}
-			in.close();
-			output = sbuilder.toString();
-		} catch (MalformedURLException ex) {
-			output = "MalformedURLException";
-		} catch (IOException ex) {
-			output = "IOException";
-		} catch (Exception ex) {
-			output = "Exception: " + ex.toString();
+		} catch (Exception ex) { // TODO
 		}
 
-		return output;
+		return baos.toByteArray();
+	}
+	
+	public int createImage(byte[] bytes) {
+		Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+		cachedBitmaps.add(bmp);
+		return cachedBitmaps.size() - 1;
 	}
 }
