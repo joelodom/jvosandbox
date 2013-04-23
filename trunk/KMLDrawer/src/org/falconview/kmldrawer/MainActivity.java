@@ -92,42 +92,143 @@ public class MainActivity extends Activity {
 			}
 		}
 		
-		float dragStartX, dragStartY;
+		private static final int INVALID_POINTER_ID = -1;
+		private int pointerA = INVALID_POINTER_ID;
+		private int pointerB = INVALID_POINTER_ID;
+		private float pointerAStartX, pointerAStartY, pointerBStartX, pointerBStartY;
+		private float pointerAEndX, pointerAEndY, pointerBEndX, pointerBEndY;
 
 		public boolean onTouch(View view, MotionEvent event) {
-			// if(event.getAction() != MotionEvent.ACTION_DOWN)
-			// return super.onTouchEvent(event);
-			// Log.d(TAG, "point: " + point);
+			switch (event.getActionMasked()) {
 
-			// addEllipse((int) event.getX(), (int) event.getY());
-			// nativeLog("new touch point: " + point);
+			case MotionEvent.ACTION_DOWN: {
+				// save pointer A starting state
 
-			switch (event.getAction()) {
-			case MotionEvent.ACTION_DOWN:
-				// save the start point
-				dragStartX = event.getX();
-				dragStartY = event.getY();
+				pointerAStartX = event.getX();
+				pointerAStartY = event.getY();
+				pointerA = event.getPointerId(0);
+				pointerB = INVALID_POINTER_ID; // in case it wasn't reset before
+
 				break;
-			case MotionEvent.ACTION_UP:
-				float[] bounds = getGeoBounds();
-				
-				// calculate degrees per pixel
-				float dppX = (bounds[3] - bounds[1])/width;
-				float dppY = (bounds[0] - bounds[2])/height;
-				
-				// calculate change in degrees
-				float dx = dppX*(dragStartX - event.getX());
-				float dy = dppY*(event.getY() - dragStartY);
-				
-				// reset bounds
-				bounds[0] += dy;
-				bounds[2] += dy;
-				bounds[1] += dx;
-				bounds[3] += dx;
-				setGeoBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
-				invalidate();
-				
+			}
+			case MotionEvent.ACTION_POINTER_DOWN: {
+				// save pointer B starting state
+
+				if (event.getPointerCount() < 2)
+					break; // ???
+
+				int indexA = event.findPointerIndex(pointerA);
+				if (indexA == INVALID_POINTER_ID)
+					break; // ???
+				int indexB = indexA == 0 ? 1 : 0;
+
+				pointerBStartX = event.getX(indexB);
+				pointerBStartY = event.getY(indexB);
+				pointerB = event.getPointerId(indexB);
+
 				break;
+			}
+			case MotionEvent.ACTION_POINTER_UP: {
+				if (pointerA != INVALID_POINTER_ID
+						&& pointerB != INVALID_POINTER_ID) {
+					// save pointer ending states
+
+					int indexA = event.findPointerIndex(pointerA);
+					pointerAEndX = event.getX(indexA);
+					pointerAEndY = event.getY(indexA);
+					
+					int indexB = event.findPointerIndex(pointerB);
+					pointerBEndX = event.getX(indexB);
+					pointerBEndY = event.getY(indexB);
+
+					// leave pointerB set so that we know that ACTION_UP ends a
+					// zoom
+				} else {
+					// what happened???
+					pointerA = INVALID_POINTER_ID;
+					pointerB = INVALID_POINTER_ID;
+				}
+
+				break;
+			}
+			case MotionEvent.ACTION_UP: {
+				if (pointerA != INVALID_POINTER_ID
+						&& pointerB == INVALID_POINTER_ID) {
+					// panning
+
+					// calculate degrees per pixel
+					float[] bounds = getGeoBounds();
+					float dppX = (bounds[3] - bounds[1]) / width;
+					float dppY = (bounds[0] - bounds[2]) / height;
+
+					// calculate change in degrees
+					float dx = dppX * (pointerAStartX - event.getX());
+					float dy = dppY * (event.getY() - pointerAStartY);
+
+					// reset bounds
+
+					bounds[0] += dy;
+					bounds[2] += dy;
+					bounds[1] += dx;
+					bounds[3] += dx;
+
+					setGeoBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
+
+					invalidate();
+				} else if (pointerA != INVALID_POINTER_ID
+						&& pointerB != INVALID_POINTER_ID) {
+					// zooming
+
+					// calculate zoom factor
+
+					float dxStart = pointerAStartX - pointerBStartX;
+					float dyStart = pointerAStartY - pointerBStartY;
+					float d2Start = dxStart * dxStart + dyStart * dyStart;
+
+					float dxEnd = pointerAEndX - pointerBEndX;
+					float dyEnd = pointerAEndY - pointerBEndY;
+					float d2End = dxEnd * dxEnd + dyEnd * dyEnd;
+
+					float zoom = (float) Math.sqrt(d2Start / d2End);
+					
+					// calculate screen center of zoom as a fraction from edge
+					
+					float centerX = (pointerAEndX + pointerBEndX)/2.0f;
+					float centerY = (pointerAEndY + pointerBEndY)/2.0f;
+					
+					float xFrac = centerX/width;
+					float yFrac = centerY/height;
+					
+					// set new bounds
+					
+					float[] bounds = getGeoBounds();
+
+					float geoWidth = bounds[3] - bounds[1];
+					float geoHeight = bounds[0] - bounds[2];
+					
+					float geoCenterX = bounds[1] + xFrac*geoWidth;
+					float geoCenterY = bounds[0] - yFrac*geoHeight;
+					
+					bounds[0] = geoCenterY + zoom*geoHeight/2.0f;
+					bounds[1] = geoCenterX - zoom*geoWidth/2.0f;
+					bounds[2] = geoCenterY - zoom*geoHeight/2.0f;
+					bounds[3] = geoCenterX + zoom*geoWidth/2.0f;
+					
+					setGeoBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
+					
+					invalidate();
+				}
+
+				pointerA = INVALID_POINTER_ID;
+				pointerB = INVALID_POINTER_ID;
+
+				break;
+			}
+			case MotionEvent.ACTION_CANCEL: {
+				pointerA = INVALID_POINTER_ID;
+				pointerB = INVALID_POINTER_ID;
+				break;
+			}
 			}
 
 			return true;
