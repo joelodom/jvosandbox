@@ -29,6 +29,10 @@ public:
 class AndroidShim : public kmldrawing::KMLShim
 {
 public:
+   AndroidShim() : m_ul_lat(50.0), m_ul_lon(-127.0), m_lr_lat(23.0), m_lr_lon(-67.0)
+   {
+   }
+
    void CleanupAfterDraw();
 
    virtual void BeginDraw();
@@ -72,6 +76,7 @@ public:
    virtual void LogMessage(const std::string& message);
 
    int m_height, m_width;
+   double m_ul_lat, m_ul_lon, m_lr_lat, m_lr_lon;
 
    std::stack<kmldrawing::Pen*> m_pens_to_delete_after_each_draw;
    std::stack<kmldrawing::Brush*> m_brushes_to_delete_after_each_draw;

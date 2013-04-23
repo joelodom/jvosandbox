@@ -1690,9 +1690,9 @@ void kmldrawing::KMLDrawer::FetchPossiblyLocalFile(
 
 bool kmldrawing::KMLDrawer::OpenKML(const std::string& uri)
 {
-   m_shim->LogMessage("Calling FetchKML");
+   //m_shim->LogMessage("Calling FetchKML");
    bool b = FetchKML(uri, true);
-   m_shim->LogMessage(b ? "FetchKML returned true" : "FetchKML returned false");
+   //m_shim->LogMessage(b ? "FetchKML returned true" : "FetchKML returned false");
    return b;
 }
 
@@ -1710,7 +1710,7 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
 
    // try to parse as KMZ
 
-   m_shim->LogMessage("Trying KMZ...");
+   //m_shim->LogMessage("Trying KMZ...");
 
    std::string possible_kmz;
    kmlengine::KmzFilePtr kmz_file = nullptr;
@@ -1728,7 +1728,7 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
    // (possibly very slow) step.  This is necessary due to a LibKML bug where
    // KML inside of a KMZ is sometimes reparsed every fetch.
 
-   m_shim->LogMessage("Trying KML file cache...");
+   //m_shim->LogMessage("Trying KML file cache...");
 
    auto it = m_kml_file_cache.find(resolved_uri);
    if (it != m_kml_file_cache.end())
@@ -1741,7 +1741,7 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
 
    // try the KmlCache relative to our URL
 
-   m_shim->LogMessage("Trying relative fetch...");
+   //m_shim->LogMessage("Trying relative fetch...");
 
    if (kml_file == nullptr && m_uris.size() > 0)
    {
@@ -1759,7 +1759,7 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
 
    // special handling for possibly local files
 
-   m_shim->LogMessage("Trying local file...");
+   //m_shim->LogMessage("Trying local file...");
 
    if (kml_file == nullptr)
    {
@@ -1772,7 +1772,7 @@ bool kmldrawing::KMLDrawer::FetchKML(const std::string& uri,
 
    // last ditch is to try the KmlCache with absolute URL
 
-   m_shim->LogMessage("Trying absolute URL...");
+   //m_shim->LogMessage("Trying absolute URL...");
 
    if (kml_file == nullptr)
       kml_file = m_kml_cache->FetchKmlRelative(uri, uri);

@@ -10,11 +10,15 @@
 extern "C"
 {
 JNIEXPORT void JNICALL Java_org_falconview_kmldrawer_MainActivity_nativeLog(
-      JNIEnv* env, jobject obj, jstring logThis);
+   JNIEnv* env, jobject obj, jstring logThis);
 JNIEXPORT void JNICALL Java_org_falconview_kmldrawer_MainActivity_initDrawer(
-      JNIEnv* env, jobject obj, jstring kml_url);
+   JNIEnv* env, jobject obj, jstring kml_url);
 JNIEXPORT void JNICALL Java_org_falconview_kmldrawer_MainActivity_drawKML(
-      JNIEnv* env, jobject obj, jint height, jint width);
+   JNIEnv* env, jobject obj, jint height, jint width);
+JNIEXPORT void JNICALL Java_org_falconview_kmldrawer_MainActivity_setGeoBounds(
+   JNIEnv* env, jobject obj, jfloat ul_lat, jfloat ul_lon, jfloat lr_lat, jfloat lr_lon);
+JNIEXPORT jfloatArray JNICALL Java_org_falconview_kmldrawer_MainActivity_getGeoBounds(
+   JNIEnv* env, jobject obj);
 };
 
 extern int run_tests_main(int argc, char **argv);
@@ -92,6 +96,36 @@ JNIEXPORT void JNICALL Java_org_falconview_kmldrawer_MainActivity_drawKML(
    the_shim->CleanupAfterDraw();
 }
 
+JNIEXPORT void JNICALL Java_org_falconview_kmldrawer_MainActivity_setGeoBounds(
+   JNIEnv* env, jobject obj, jfloat ul_lat, jfloat ul_lon, jfloat lr_lat, jfloat lr_lon)
+{
+   the_shim->m_ul_lat = ul_lat;
+   the_shim->m_ul_lon = ul_lon;
+   the_shim->m_lr_lat = lr_lat;
+   the_shim->m_lr_lon = lr_lon;
+}
+
+JNIEXPORT jfloatArray JNICALL Java_org_falconview_kmldrawer_MainActivity_getGeoBounds(
+   JNIEnv* env, jobject obj)
+{
+   jfloatArray result;
+   result = the_shim->m_env->NewFloatArray(4);
+   if (result == nullptr)
+        return nullptr; // out of memory
+
+   // fill a temp structure to use to populate the java array
+   jfloat fill[4];
+   fill[0] = the_shim->m_ul_lat;
+   fill[1] = the_shim->m_ul_lon;
+   fill[2] = the_shim->m_lr_lat;
+   fill[3] = the_shim->m_lr_lon;
+
+   // move from the temp structure to the java structure
+   the_shim->m_env->SetFloatArrayRegion(result, 0, 4, fill);
+
+   return result;
+}
+
 ////
 //// SHIM METHODS
 ////
@@ -130,10 +164,10 @@ void AndroidShim::GetMapBounds(double* bottom_lat, double* left_lon,
       double* top_lat, double* right_lon)
 {
    //LogMessage("NOT IMPLEMENTED: GetMapBounds");
-   *bottom_lat = 23.0;
-   *left_lon = -127.0;
-   *top_lat = 50.0;
-   *right_lon = -67.0;
+   *bottom_lat = m_lr_lat;
+   *left_lon = m_ul_lon;
+   *top_lat = m_ul_lat;
+   *right_lon = m_lr_lon;
 }
 
 void AndroidShim::GetDegreesPerPixel(double* dpp_y, double* dpp_x)
@@ -322,10 +356,10 @@ extern std::string US_STATES_KML;
 
 bool AndroidShim::Fetch(const std::string& uri, std::string* data)
 {
-   LogMessage("Entering Fetch");
+   //LogMessage("Entering Fetch");
 
    jclass cls = m_env->GetObjectClass(m_obj);
-   LogMessage("Calling GetMethodID");
+   //LogMessage("Calling GetMethodID");
    jmethodID mid = m_env->GetMethodID(cls, "fetchURL", "(Ljava/lang/String;)[B");
    if (mid == 0)
    {
@@ -333,26 +367,26 @@ bool AndroidShim::Fetch(const std::string& uri, std::string* data)
       return false;
    }
 
-   LogMessage("Calling NewStringUTF");
+   //LogMessage("Calling NewStringUTF");
    jobject str = m_env->NewStringUTF(uri.c_str()); // TODO: does this leak???
-   LogMessage("Calling CallObjectMethod");
+   //LogMessage("Calling CallObjectMethod");
    jbyteArray arr = (jbyteArray)m_env->CallObjectMethod(m_obj, mid, str);
    jsize len = m_env->GetArrayLength(arr);
 
    jboolean is_copy;
-   LogMessage("Calling GetByteArrayElements");
+   //LogMessage("Calling GetByteArrayElements");
    jbyte* bytes = m_env->GetByteArrayElements(arr, &is_copy);
    data->assign((char*)bytes, len);
    //LogMessage("Calling ReleaseByteArrayElements");
    //m_env->ReleaseByteArrayElements(); // TODO: definite leak (see performance tip at http://developer.android.com/training/articles/perf-jni.html)
 
-   std::stringstream ss;
-   ss << "Returning from Fetch " << uri << " " << data->length() << " characters";
-   ss << "  array bytes: " << len;
+   //std::stringstream ss;
+   //ss << "Returning from Fetch " << uri << " " << data->length() << " characters";
+   //ss << "  array bytes: " << len;
    //ss << "  Starts: " << data->substr(0, 20);
    //ss << "  Ends: " << data->substr(data->length() - 20);
    //ss << "  Byte 9: " << std::hex << int((*data)[8]);
-   LogMessage(ss.str().c_str());
+   //LogMessage(ss.str().c_str());
 
    //*data = US_STATES_KML;
    return data->length() > 0;
