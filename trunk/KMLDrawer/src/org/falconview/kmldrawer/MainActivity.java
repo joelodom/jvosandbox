@@ -25,10 +25,10 @@ import android.view.WindowManager;
 
 public class MainActivity extends Activity {
 	private native void nativeLog(String logThis);
-
 	private native void initDrawer(String kml_url);
-
 	private native void drawKML(int height, int width);
+	private native void setGeoBounds(float ul_lat, float ul_lon, float lr_lat, float lr_lon);
+	private native float[] getGeoBounds();
 
 	static {
 		System.loadLibrary("KMLShim");
@@ -48,11 +48,13 @@ public class MainActivity extends Activity {
 			setFocusable(true);
 			setFocusableInTouchMode(true);
 
-			// this.setOnTouchListener(this);
+			this.setOnTouchListener(this);
 
 			paint.setColor(Color.WHITE);
 			paint.setAntiAlias(true);
 		}
+		
+		int height, width;
 
 		@Override
 		public void onDraw(Canvas canvas) {
@@ -63,13 +65,21 @@ public class MainActivity extends Activity {
 			points.clear();
 			lines.clear();
 
-			// draw KML (adds KML objects to draw)
-
-			int height = canvas.getHeight();
-			int width = canvas.getWidth();
-
+			// call drawKML in the native library
+			height = canvas.getHeight();
+			width = canvas.getWidth();
 			drawKML(height, width);
-
+			
+			// draw images
+			for (Image image : images) {
+				// TODO: rotation
+				// TODO: don't allocate these objects during the draw
+				Bitmap bmp = cachedBitmaps.get(image.index);
+				Rect src = new Rect(0, 0, bmp.getWidth(), bmp.getHeight());
+				RectF dst = new RectF(image.left, image.top, image.right, image.bottom);
+				canvas.drawBitmap(bmp, src, dst, paint);
+			}
+			
 			// draw lines
 			for (Line line : lines) {
 				canvas.drawLine(line.a.x, line.a.y, line.b.x, line.b.y, paint);
@@ -80,24 +90,46 @@ public class MainActivity extends Activity {
 				canvas.drawCircle(point.x, point.y, 5, paint);
 				// Log.d(TAG, "Painting: "+point);
 			}
-			
-			// draw images
-			for (Image image : images) {
-				// TODO: rotation
-				Bitmap bmp = cachedBitmaps.get(image.index);
-				Rect src = new Rect(0, 0, bmp.getWidth(), bmp.getHeight());
-				RectF dst = new RectF(image.left, image.top, image.right, image.bottom);
-				canvas.drawBitmap(bmp, src, dst, paint);
-			}
 		}
+		
+		float dragStartX, dragStartY;
 
 		public boolean onTouch(View view, MotionEvent event) {
 			// if(event.getAction() != MotionEvent.ACTION_DOWN)
 			// return super.onTouchEvent(event);
 			// Log.d(TAG, "point: " + point);
-			addEllipse((int) event.getX(), (int) event.getY());
+
+			// addEllipse((int) event.getX(), (int) event.getY());
 			// nativeLog("new touch point: " + point);
-			invalidate();
+
+			switch (event.getAction()) {
+			case MotionEvent.ACTION_DOWN:
+				// save the start point
+				dragStartX = event.getX();
+				dragStartY = event.getY();
+				break;
+			case MotionEvent.ACTION_UP:
+				float[] bounds = getGeoBounds();
+				
+				// calculate degrees per pixel
+				float dppX = (bounds[3] - bounds[1])/width;
+				float dppY = (bounds[0] - bounds[2])/height;
+				
+				// calculate change in degrees
+				float dx = dppX*(dragStartX - event.getX());
+				float dy = dppY*(event.getY() - dragStartY);
+				
+				// reset bounds
+				bounds[0] += dy;
+				bounds[2] += dy;
+				bounds[1] += dx;
+				bounds[3] += dx;
+				setGeoBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
+				invalidate();
+				
+				break;
+			}
+
 			return true;
 		}
 
