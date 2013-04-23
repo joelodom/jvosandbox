@@ -8,6 +8,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -193,8 +194,8 @@ public class MainActivity extends Activity {
 					
 					// calculate screen center of zoom as a fraction from edge
 					
-					float centerX = (pointerAEndX + pointerBEndX)/2.0f;
-					float centerY = (pointerAEndY + pointerBEndY)/2.0f;
+					float centerX = (pointerAStartX + pointerBStartX)/2.0f;
+					float centerY = (pointerAStartY + pointerBStartY)/2.0f;
 					
 					float xFrac = centerX/width;
 					float yFrac = centerY/height;
@@ -303,7 +304,7 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		// allow networking on main thread for now (Ouch!)
+		// allow networking on main thread for now (Ouch!) TODO: make this right!
 		// for better way, see http://stackoverflow.com/questions/6343166/android-os-networkonmainthreadexception
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
@@ -320,6 +321,14 @@ public class MainActivity extends Activity {
 		drawView = new DrawView(this);
 		setContentView(drawView);
 		drawView.requestFocus();
+	}
+	
+	@Override
+	public void startActivity(Intent intent) {
+		#error this is not being called, plus I can't reopen the app without a crash due to loading twice...
+		# need to have way to close currently open KML to open new KML
+		nativeLog("data: " + intent.getDataString());
+		super.startActivity(intent);
 	}
 
 	public void addEllipse(float x, float y) {
