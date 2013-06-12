@@ -540,8 +540,6 @@ void kmldrawing::KMLDrawer::RenderPoint(const kmldom::PointPtr& point,
    if (surface_x >= 0 && surface_x < m_surface_width &&
       surface_y >= 0 && surface_y < m_surface_height)
    {
-	  //m_shim->LogMessage("point is on surface");
-
       kmldom::StylePtr style = ResolveStyle(associated_placemark);
 
       float icon_size = 4.0f;

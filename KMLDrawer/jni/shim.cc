@@ -62,6 +62,11 @@ JNIEXPORT void JNICALL Java_org_falconview_kmldrawer_MainActivity_initDrawer(
 {
    __android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "Initializing drawer...");
 
+   // delete old objects
+   delete the_drawer;
+   delete the_shim;
+   opened = false;
+
    // initialize shim & drawer
    the_shim = new AndroidShim;
    the_drawer = new kmldrawing::KMLDrawer(the_shim);
@@ -163,7 +168,6 @@ void AndroidShim::GetSurfaceSize(int* width, int* height)
 void AndroidShim::GetMapBounds(double* bottom_lat, double* left_lon,
       double* top_lat, double* right_lon)
 {
-   //LogMessage("NOT IMPLEMENTED: GetMapBounds");
    *bottom_lat = m_lr_lat;
    *left_lon = m_ul_lon;
    *top_lat = m_ul_lat;
@@ -172,7 +176,6 @@ void AndroidShim::GetMapBounds(double* bottom_lat, double* left_lon,
 
 void AndroidShim::GetDegreesPerPixel(double* dpp_y, double* dpp_x)
 {
-   //LogMessage("NOT IMPLEMENTED: GetDegreesPerPixel");
    double bottom_lat, left_lon, top_lat, right_lon;
    GetMapBounds(&bottom_lat, &left_lon, &top_lat, &right_lon);
    *dpp_y = (top_lat - bottom_lat) / m_height;
@@ -181,7 +184,6 @@ void AndroidShim::GetDegreesPerPixel(double* dpp_y, double* dpp_x)
 
 void AndroidShim::GeoToSurface(double lat, double lon, int* x, int* y)
 {
-   //LogMessage("NOT IMPLEMENTED: GeoToSurface");
    double dpp_y, dpp_x;
    double bottom_lat, left_lon, top_lat, right_lon;
    GetDegreesPerPixel(&dpp_y, &dpp_x);
