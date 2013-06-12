@@ -16,6 +16,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.MotionEvent;
@@ -65,6 +66,7 @@ public class MainActivity extends Activity {
 			// clear objects
 			points.clear();
 			lines.clear();
+			images.clear();
 
 			// call drawKML in the native library
 			height = canvas.getHeight();
@@ -309,9 +311,15 @@ public class MainActivity extends Activity {
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
 
+		// we currently only support fetching by URL
+		String url = "http://osm-kml.appspot.com/static/osm.kml"; // default 
+		Intent intent = getIntent();
+		Uri data = intent.getData();
+		if (data != null)
+	    	url = data.toString();
+
 		// initialize the drawer
-		//initDrawer("http://osm-kml.appspot.com/static/us_states.kml");
-		initDrawer("http://osm-kml.appspot.com/static/osm.kml");
+	    initDrawer(url);
 
 		// Set full screen view
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -323,14 +331,6 @@ public class MainActivity extends Activity {
 		drawView.requestFocus();
 	}
 	
-	@Override
-	public void startActivity(Intent intent) {
-		#error this is not being called, plus I can't reopen the app without a crash due to loading twice...
-		# need to have way to close currently open KML to open new KML
-		nativeLog("data: " + intent.getDataString());
-		super.startActivity(intent);
-	}
-
 	public void addEllipse(float x, float y) {
 		drawView.addEllipse(x, y);
 	}

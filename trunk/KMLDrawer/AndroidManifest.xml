@@ -35,6 +35,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
+                <!-- data android:mimeType="application/vnd.google-earth.kml+xml"/>
+                <data android:mimeType="application/vnd.google-earth.kmz"/ -->
                 <data android:scheme="http" />
                 <data android:scheme="https" />
                 <data android:scheme="file" />
